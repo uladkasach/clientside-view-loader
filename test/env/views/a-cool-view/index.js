@@ -5,6 +5,9 @@ var builder = {
     generate : function(options){
         var element = this.dom.cloneNode(true); // clone the dom to build an elemenet, dont disturbe the original element
 
+        // manipulate the element dom
+        // attach element functionality
+
         return element;
     },
 }
