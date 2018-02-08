@@ -14,13 +14,15 @@
     "url": "https://github.com/uladkasach/view-loader"
   },
   "keywords": [
+    "browser",
     "clientside",
+    "client-side",
+    "frontend",
+    "front-end",
     "view",
     "views",
     "html",
     "css",
-    "frontend",
-    "front-end",
     "clientside-module-manager"
   ],
   "author": "UladKasach",
