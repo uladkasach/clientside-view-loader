@@ -1,5 +1,5 @@
 {
-  "name": "cmm-view-loader",
+  "name": "clientside-view-loader",
   "version": "1.0.2",
   "description": "clientside module which simplifies loading views (html, css, and view compiler)",
   "main": "src/index.js",
