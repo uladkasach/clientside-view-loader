@@ -17,7 +17,11 @@ var view_loader = {
             })
         var promise_to_initialize_compiler = Promise.all([promise_compiler, promise_dom])
             .then(([compiler, dom])=>{
-                compiler.dom = dom;
+                var original_generator = compiler.generate;
+                compiler.generate = function(options){
+                    var result = original_generator(dom.cloneNode(true), options) // 1. inject a dom clone directly into generator
+                    return Promise.resolve(result);  // 2. wrap compiler function in a promise to make the output standard;
+                }
                 return compiler;
             })
         promise_to_initialize_compiler.generate = function(){

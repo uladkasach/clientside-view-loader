@@ -65,12 +65,13 @@ project.html
 
 *a-cool-view/index.js*
 ```js
-var builder = { // this.dom is automatically appended on loading of this object
-    generate : function(options){
-        var element = this.dom.cloneNode(true); // clone the dom to build an elemenet, dont disturbe the original element
+var builder = {
+    generate : function(dom_clone, options){
+        var element = dom_clone; // a clone of the dom is automatically injected. you can modify it explicitly and not disturb the "template" for future renders
 
         // manipulate the element dom
         // attach element functionality
+        element.innerHTML = "woo!"; 
 
         return element;
     },
