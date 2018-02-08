@@ -1,4 +1,7 @@
-# view-loader
+# cmm-view-loader
+
+[![npm](https://img.shields.io/npm/v/cmm-view-loader.svg?style=flat-square)](https://www.npmjs.com/package/cmm-view-loader)
+[![npm](https://img.shields.io/npm/dm/cmm-view-loader.svg)](https://www.npmjs.com/package/cmm-view-loader)
 
 This is a npm nodule for the front end ([a cmm module](https://github.com/uladkasach/clientside-module-manager)) built to simplify the loading of view elements into a web page.
 
@@ -6,10 +9,14 @@ This is a npm nodule for the front end ([a cmm module](https://github.com/uladka
 ### Installation
 `npm install view-loader --save`
 
+
 ### Usage
 
 A view element is is a DOM element, based in an html file `view.html`, which optionally requires a `view.css`.
 `index.js` of the view will be given (`dom`) after all resources have loaded
+
+#### full example
+check out the `/test/env/` directory for a fully working example.
 
 #### simple example
 
@@ -47,7 +54,7 @@ project.html
 ```html
 <script src = "/node_modules/clientside-module-manager/src/index.js"></script> <!-- defines require, promise_require, and cmm in global scope -->
 <script>
-    require("view-loader")
+    require("cmm-view-loader")
         .then((view)=>{
             view.load("a-cool-view").generate()
                 .then((element)=>{
@@ -59,10 +66,9 @@ project.html
 
 
 #### example with functionality
-
 ```html
 <script>
-    require("view-loader")
+    require("cmm-view-loader")
         .then((view)=>{
             view.load("views/modal/login_signup").generate()
             .then((element)=>{

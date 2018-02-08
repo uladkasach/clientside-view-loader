@@ -1,10 +1,13 @@
 {
-  "name": "view-loader",
-  "version": "0.0.1",
+  "name": "cmm-view-loader",
+  "version": "1.0.1",
   "description": "clientside module which simplifies loading views (html, css, and view compiler)",
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "clientside-module-manager": "0.0.13"
   },
   "repository": {
     "type": "git",
@@ -17,7 +20,8 @@
     "html",
     "css",
     "frontend",
-    "front-end"
+    "front-end",
+    "clientside-module-manager"
   ],
   "author": "UladKasach",
   "license": "ISC"
