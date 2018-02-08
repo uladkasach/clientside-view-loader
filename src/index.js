@@ -7,7 +7,7 @@ var view_loader = {
                 - TODO - enable retreival of more dependencies to load
                     - e.g., css, json, other js files
         */
-        var promise_compiler = require(path+"/index.js");
+        var promise_compiler = require(path+"/compiler.js");
         var promise_dom = require(path+"/view.html")
             .then((html)=>{
                 var holder = document.createElement("div");
@@ -17,7 +17,7 @@ var view_loader = {
             })
         var promise_to_initialize_compiler = Promise.all([promise_compiler, promise_dom])
             .then(([compiler, dom])=>{
-                compiler.initialize(dom);
+                compiler.dom = dom;
                 return compiler;
             })
         promise_to_initialize_compiler.generate = function(){

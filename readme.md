@@ -65,10 +65,7 @@ project.html
 
 *a-cool-view/index.js*
 ```js
-var builder = {
-    initialize : function(dom){ // the initialize function is triggered by the view-loader module and passes the dom content of the `view.html` file
-        this.dom = dom; // save the dom to the object
-    },
+var builder = { // this.dom is automatically appended on loading of this object
     generate : function(options){
         var element = this.dom.cloneNode(true); // clone the dom to build an elemenet, dont disturbe the original element
 
