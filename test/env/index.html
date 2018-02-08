@@ -1,0 +1,28 @@
+<script> window.module = {}; </script>
+
+<script src = "node_modules/clientside-module-manager/src/index.js"></script>
+<!-- <script src = "node_modules/view-loader/src/index.js"></script>-->
+<script>
+    require("view-loader")
+        .then((view)=>{
+            view.load("views/a-cool-view").generate()
+                .then((element)=>{
+                    console.log("element : ");
+                    console.log(element);
+                    document.querySelector("body").appendChild(element);
+                })
+                .catch((err)=>{
+                    console.error(err);
+                })
+        })
+
+        /*
+    var view = view_loader;
+    view.load("views/a-cool-view").generate()
+        .then((compiler)=>{
+            console.log("compiler");
+            console.log(compiler);
+        })
+        */
+
+</script>
