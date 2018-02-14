@@ -1,4 +1,5 @@
 var view_loader = {
+
     load : function(request){
         // to load a view:
         /*
@@ -42,15 +43,18 @@ var view_loader = {
 
         var promise_to_initialize_compiler = Promise.all([promise_compiler, promise_dom])
             .then(([compiler, dom])=>{
-                try { // try to wrap the generator function to inject the dom and standardize the output as a promise
-                    var original_generator = compiler.generate;
-                    compiler.generate = function(options){
-                        var result = original_generator(dom.cloneNode(true), options) // 1. inject a dom clone directly into generator
-                        return Promise.resolve(result);  // 2. wrap compiler function in a promise to make the output standard;
+                if(compiler.generator_wrapped !== true){ // if generator has not already been wrapped
+                    try { // try to wrap the generator function to inject the dom and standardize the output as a promise
+                        var original_generator = compiler.generate;
+                        compiler.generate = function(options){
+                            var result = original_generator(dom.cloneNode(true), options) // 1. inject a dom clone directly into generator
+                            return Promise.resolve(result);  // 2. wrap compiler function in a promise to make the output standard;
+                        }
+                        compiler.generator_wrapped = true;
+                    } catch (err){ // catch errors if they occur; typically occures if the user did not define a generate function in the compiler.js
+                        console.error(err);
+                        console.warn("due to the above error, clientside-view-loader was not able to finalize the generate function for " + request)
                     }
-                } catch (err){ // catch errors if they occur; typically occures if the user did not define a generate function in the compiler.js
-                    console.error(err);
-                    console.warn("due to the above error, clientside-view-loader was not able to finalize the generate function for " + request)
                 }
                 return compiler;
             })
@@ -60,6 +64,9 @@ var view_loader = {
             })
         }
         return promise_to_initialize_compiler;
-    }
+    },
+
+
+
 }
 module.exports = view_loader;
