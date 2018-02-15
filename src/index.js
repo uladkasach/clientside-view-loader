@@ -45,7 +45,7 @@ var view_loader = {
             .then(([compiler, dom])=>{
                 if(compiler.generator_wrapped !== true){ // if generator has not already been wrapped
                     try { // try to wrap the generator function to inject the dom and standardize the output as a promise
-                        var original_generator = compiler.generate;
+                        var original_generator = compiler.generate.bind(compiler); // ensure to bind "this" correctly;
                         compiler.generate = function(options){
                             var result = original_generator(dom.cloneNode(true), options) // 1. inject a dom clone directly into generator
                             return Promise.resolve(result);  // 2. wrap compiler function in a promise to make the output standard;
