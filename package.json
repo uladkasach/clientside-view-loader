@@ -7,13 +7,13 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "clientside-require": "^3.0.2"
+    "clientside-require": "^3.9.2"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/uladkasach/clientside-view-loader"
   },
-  "require_mode" : "async",
+  "require_mode": "async",
   "keywords": [
     "browser",
     "clientside",
@@ -27,5 +27,10 @@
     "clientside-require"
   ],
   "author": "UladKasach",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "jsdom": "^11.6.2",
+    "mocha": "^5.0.4",
+    "xmlhttprequest": "^1.8.0"
+  }
 }

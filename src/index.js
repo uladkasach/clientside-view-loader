@@ -21,49 +21,19 @@ var view_loader = {
     },
 
     _load : async function(request){
-        // to load a view:
         /*
-            1. load the view.html as the dom
-            2. load the index.js as the compiler
+            derive the paths to the compiler and html
         */
-
-        /*
-            Retreive path to files - handling node_modules as well
-                - Therefore, assume that if there is no "/" in the name that it is a node module.
-                    - note, this disables relative paths to root directory view directories and requires abs path
-        */
-        if(request.indexOf("/") == -1){ // if no "/" present, this is a node module. load the dom and compiler as defined in the package.json
-            // define module basic info
-            var module_name = request;
-            var module_root_path = window.clientside_require.modules_root + "/" + module_name;
-
-            // retreive package_json contents
-            var package_json_path = module_root_path +  "/package.json"; // derive where to expect the package.json file
-            var package_json = await require(package_json_path); // retreive the package_json contents
-            console.log(package_json);
-
-            // define path to compiler - which is the main script
-            if(typeof package_json.main == "undefined") package_json.main = "index.js"; // commonjs require assumes this is the case if not defined
-            var compiler_path = module_root_path +  "/" + package_json.main;
-
-            // define path to view - which is in the same dir as compiler under name "view.html"
-            var html_path = module_root_path + "/view.html";
-        } else { // else we're given an absolute or a relative path to the dir of the view.
-            var compiler_path = request + "/compiler.js";
-            var html_path = request + "/view.html";
-        }
+        var paths = await this.retreive_paths(request)
 
         /*
             retreive the compiler and html
-                1. start promises
-                2. wait for promises to resolve
+                - define promises and THEN wait for each one
         */
-        var promise_compiler = require(compiler_path);
-        var promise_html = require(html_path);
-
+        var promise_compiler = require(paths.compiler);
+        var promise_html = require(paths.html);
         var compiler = await promise_compiler;
         var html = await promise_compiler;
-
 
         /*
             convert html into dom
@@ -75,11 +45,51 @@ var view_loader = {
         */
         var compiler = this.wrap_compiler_generator_function(compiler, dom);
 
-
         /*
             resolve with compiler
         */
         return compiler;
+    },
+
+    retreive_paths : async function(request){
+        /*
+            retreive path to files - handling node_modules as well
+                - Therefore, assume that if there is no "/" in the name that it is a node module.
+        */
+        if(request.indexOf("/") == -1){ // if no "/" present, this is a node module. load the dom and compiler as defined in the package.json
+            // define module basic info
+            var module_name = request;
+            var module_root_path = window.clientside_require.modules_root + "/" + module_name;
+
+            // retreive package_json contents
+            var package_json_path = module_root_path +  "/package.json"; // derive where to expect the package.json file
+            var package_json = await require(package_json_path); // retreive the package_json contents
+
+            // define path to compiler - which is the main script
+            if(typeof package_json.main == "undefined") package_json.main = "compiler.js"; // commonjs require assumes this is the case if not defined
+            var compiler_path = module_root_path +  "/" + package_json.main;
+
+            // define path to view - which is in the same dir as compiler under name "view.html"
+            var html_path = module_root_path + "/view.html";
+        } else { // else we're given an absolute or a relative path to the dir of the view.
+            var compiler_path = request + "/compiler.js";
+            var html_path = request + "/view.html";
+        }
+
+        /*
+            validate paths
+        */
+        var compiler_file_name = "compiler.js";
+        if(compiler_path.slice(-1*compiler_file_name.length) !== compiler_file_name) throw new Error("view module main must be `compiler.js` - invalid module");
+        
+        /*
+            return paths
+        */
+        var paths = {
+            compiler : compiler_path,
+            html : html_path,
+        }
+        return paths;
     },
 
     convert_html_into_dom : function(html){
