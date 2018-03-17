@@ -81,7 +81,7 @@ var view_loader = {
         */
         var compiler_file_name = "compiler.js";
         if(compiler_path.slice(-1*compiler_file_name.length) !== compiler_file_name) throw new Error("view module main must be `compiler.js` - invalid module");
-        
+
         /*
             return paths
         */
@@ -93,13 +93,14 @@ var view_loader = {
     },
 
     convert_html_into_dom : function(html){
-        var holder = document.createElement("div");
+        var holder = window.document.createElement("div");
         holder.innerHTML = html;
         var dom = holder.childNodes[0];
         return dom;
     },
 
     wrap_compiler_generator_function : function(compiler, dom){
+        if(typeof compiler.generate !== "function") throw new Error("view module compiler must be have a `generate` method - invalid module")
         if(compiler.generator_wrapped == true) return compiler; // if true, we hae already wrapped it previously. since we store the data in cache and we manipulate it by reference this could occur. do not duplicate this wrapping.
         try { // try to wrap the generator function to inject the dom and standardize the output as a promise
             var original_generator = compiler.generate.bind(compiler); // ensure to bind "this" correctly;

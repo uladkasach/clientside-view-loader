@@ -73,13 +73,40 @@ describe('load', function(){
         })
     })
     describe('loading', function(){
-        it('should throw error if compiler file does not exist')
-        it('should throw error if compiler does not have a generate function')
-        it('should throw error if html file does not exist')
-        it('should load compiler and view for a package')
-        it('should wrap compilers generate function to inject dom_clone')
+        it('should throw error if compiler does not have a `generate` method',  async function(){
+            var view_loader_path = process.env.src_root + "/index.js";
+            var view_loader = await window.clientside_require.asynchronous_require(view_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            try {
+                var compiler = await view_loader.load("no_generator_view_module");
+                throw new Error("an error should have been thrown");
+            } catch (error){
+                assert.equal(error.message, "view module compiler must be have a `generate` method - invalid module")
+            }
+        })
+        it('should load compiler and view for a package',  async function(){
+            var view_loader_path = process.env.src_root + "/index.js";
+            var view_loader = await window.clientside_require.asynchronous_require(view_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            var compiler = await view_loader.load("default_path_view_module");
+            assert.equal(typeof compiler, "object", "compiler should be an object");
+            assert.equal(typeof compiler.generate, "function", "compiler.generate should be a function")
+        })
+        it('should wrap compilers generate function to inject dom_clone',  async function(){
+            var view_loader_path = process.env.src_root + "/index.js";
+            var view_loader = await window.clientside_require.asynchronous_require(view_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            var compiler = await view_loader.load("default_path_view_module");
+            assert.equal(compiler.generator_wrapped, true, "compiler.generator_wrapped should be defined as true")
+        })
      })
     describe('extra', function(){
-        it('should have the .generate() functionality attached')
+        it('the promise should have the .generate() functionality attached', async function(){
+            var view_loader_path = process.env.src_root + "/index.js";
+            var view_loader = await window.clientside_require.asynchronous_require(view_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            var promise_compiler = view_loader.load("default_path_view_module");
+            assert.equal(typeof promise_compiler.generate, "function", "promise_compiler.generate should be defined as a function")
+        })
     })
 })
