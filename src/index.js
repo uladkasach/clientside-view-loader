@@ -70,7 +70,8 @@ var view_loader = {
             var compiler_path = module_root_path +  "/" + package_json.main;
 
             // define path to view - which is in the same dir as compiler under name "view.html"
-            var html_path = module_root_path + "/view.html";
+            var components_root = compiler_path.substring(0, compiler_path.lastIndexOf("/")); // get dir of file of compilerpath
+            var html_path = components_root + "/view.html";
         } else { // else we're given an absolute or a relative path to the dir of the view.
             var compiler_path = request + "/compiler.js";
             var html_path = request + "/view.html";

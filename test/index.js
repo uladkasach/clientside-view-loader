@@ -59,6 +59,7 @@ describe('load', function(){
             window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
             var paths = await view_loader.retreive_paths("defined_path_view_module");
             assert.equal(paths.compiler, window.clientside_require.modules_root + "/defined_path_view_module/src/compiler.js");
+            assert.equal(paths.html, window.clientside_require.modules_root + "/defined_path_view_module/src/view.html");
         })
         it('should throw error if `main` does not define a compiler.js',  async function(){
             var view_loader_path = process.env.src_root + "/index.js";
