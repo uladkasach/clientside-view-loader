@@ -27,18 +27,13 @@ var view_loader = {
         var paths = await this.retreive_paths(request)
 
         /*
-            retreive the compiler and html
+            retreive compiler and dom promises
                 - define promises and THEN wait for each one
         */
         var promise_compiler = require(paths.compiler);
-        var promise_html = require(paths.html);
+        var promise_dom = this.retreive_dom_from_html_path(paths.html);
         var compiler = await promise_compiler;
-        var html = await promise_compiler;
-
-        /*
-            convert html into dom
-        */
-        var dom = this.convert_html_into_dom(html);
+        var dom = await promise_dom;
 
         /*
             initialize compiler
@@ -50,6 +45,7 @@ var view_loader = {
         */
         return compiler;
     },
+
 
     retreive_paths : async function(request){
         /*
@@ -91,6 +87,12 @@ var view_loader = {
             html : html_path,
         }
         return paths;
+    },
+
+    retreive_dom_from_html_path : async function(html_path){
+        var html = await require(html_path) // retreive html
+        var dom = this.convert_html_into_dom(html); // convert html to dom
+        return dom;
     },
 
     convert_html_into_dom : function(html){

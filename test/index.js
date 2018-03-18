@@ -100,6 +100,15 @@ describe('load', function(){
             var compiler = await view_loader.load("default_path_view_module");
             assert.equal(compiler.generator_wrapped, true, "compiler.generator_wrapped should be defined as true")
         })
+        it('should find that dom is defined accurately',  async function(){
+            var view_loader_path = process.env.src_root + "/index.js";
+            var view_loader = await window.clientside_require.asynchronous_require(view_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            var paths = await view_loader.retreive_paths("default_path_view_module"); // retreive the paths
+            var dom = await view_loader.retreive_dom_from_html_path(paths.html);
+            assert.equal(typeof dom, "object", "dom should be an object");
+            assert.equal(dom.innerHTML, "content_of_dom", "content should be expected");
+        })
      })
     describe('extra', function(){
         it('the promise should have the .generate() functionality attached', async function(){
