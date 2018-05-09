@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "clientside-require": "^3.9.4",
-    "clientside-view-modal-login_signup": "^1.0.3"
+    "clientside-require": "^4.0.0",
+    "clientside-view-modal-login_signup": "^1.0.4"
   }
 }

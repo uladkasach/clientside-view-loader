@@ -30,7 +30,7 @@ var view_loader = {
             retreive compiler and dom promises
                 - define promises and THEN wait for each one
         */
-        var promise_compiler = require(paths.compiler);
+        var promise_compiler = load(paths.compiler);
         var promise_dom = this.retreive_dom_from_html_path(paths.html);
         var compiler = await promise_compiler;
         var dom = await promise_dom;
@@ -59,7 +59,7 @@ var view_loader = {
 
             // retreive package_json contents
             var package_json_path = module_root_path +  "/package.json"; // derive where to expect the package.json file
-            var package_json = await require(package_json_path); // retreive the package_json contents
+            var package_json = await load(package_json_path); // retreive the package_json contents
 
             // define path to compiler - which is the main script
             if(typeof package_json.main == "undefined") package_json.main = "compiler.js"; // commonjs require assumes this is the case if not defined
@@ -90,7 +90,7 @@ var view_loader = {
     },
 
     retreive_dom_from_html_path : async function(html_path){
-        var html = await require(html_path) // retreive html
+        var html = await load(html_path) // retreive html
         var dom = this.convert_html_into_dom(html); // convert html to dom
         return dom;
     },

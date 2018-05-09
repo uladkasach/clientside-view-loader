@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/clientside-view-loader.svg?style=flat-square)](https://www.npmjs.com/package/clientside-view-loader)
 [![npm](https://img.shields.io/npm/dm/clientside-view-loader.svg)](https://www.npmjs.com/package/clientside-view-loader)
 
-This is a npm nodule for the front end ([a cmm module](https://github.com/uladkasach/clientside-module-manager)) built to simplify the loading of view elements into a web page.
+This is a npm nodule for the front end ([a clientside-require based module](https://github.com/uladkasach/clientside-module-manager)) built to simplify the loading of view elements into a web page.
 
 
 ## Installation
@@ -13,7 +13,7 @@ This is a npm nodule for the front end ([a cmm module](https://github.com/uladka
 ## Example Usage
 
 ```js
-require("clientside-view-loader")
+load("clientside-view-loader")
     .then((view)=>{
         return view.load("views/modal/login_signup").generate()
     })
@@ -45,7 +45,7 @@ project.html
 ```html
 <script src = "/node_modules/clientside-module-manager/src/index.js"></script> <!-- defines require, promise_require, and cmm in global scope -->
 <script>
-    require("clientside-view-loader")
+    load("clientside-view-loader")
         .then((view)=>{
             view.load("a-cool-view").generate()
                 .then((element)=>{
@@ -71,7 +71,7 @@ var builder = {
 
         // manipulate the element dom
         // attach element functionality
-        element.innerHTML = "woo!"; 
+        element.innerHTML = "woo!";
 
         return element;
     },
@@ -86,7 +86,7 @@ module.exports = builder; // see github.com/uladkasach/clientside-module-manager
 ### example with functionality
 ```html
 <script>
-    require("clientside-view-loader")
+    load("clientside-view-loader")
         .then((view)=>{
             return view.load("views/modal/login_signup").generate()
         })
