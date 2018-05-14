@@ -118,5 +118,13 @@ describe('load', function(){
             var promise_compiler = view_loader.load("default_path_view_module");
             assert.equal(typeof promise_compiler.generate, "function", "promise_compiler.generate should be defined as a function")
         })
+        it('should find that the .generate() functionality passes options properly', async function(){
+            var view_loader_path = process.env.src_root + "/index.js";
+            var view_loader = await window.clientside_require.asynchronous_require(view_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            var options = "option_data";
+            var content = await view_loader.load("pass_options_back_module").generate(options);
+            assert.equal(content, options, "ensure the module returns the options");
+        })
     })
 })

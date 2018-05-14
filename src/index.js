@@ -8,9 +8,9 @@ var view_loader = {
         /*
             append the .generate() function to the promise returned by load to enable `.load().generate()`
         */
-        promise_load_of_view.generate = function(){
+        promise_load_of_view.generate = function(options){
             return this.then((compiler)=>{
-                return compiler.generate();
+                return compiler.generate(options);
             })
         }
 
