@@ -1,8 +1,7 @@
 {
   "name": "clientside-view-loader",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "clientside module which simplifies loading views (html, css, and view compiler)",
-  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -13,7 +12,6 @@
     "type": "git",
     "url": "https://github.com/uladkasach/clientside-view-loader"
   },
-  "require_mode": "async",
   "keywords": [
     "browser",
     "clientside",
