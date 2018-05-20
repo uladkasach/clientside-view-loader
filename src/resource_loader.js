@@ -9,10 +9,11 @@ var resource_loader = {
             retreive load the components
                 - define promises and THEN wait for each one (this enables them to load in parallel)
                 - ensure that generate and hydrate are OPTIONALLY loaded (i.e., dont complain if they dont exist)
+                - if the path is `false`, just return `false`
         */
-        var promise_dom = this.retreive_dom_from_html_path(paths.html);
-        var promise_generate = load(paths.generate, {log_loading_errors:false}).catch(err=>false); // if cant load, return false
-        var promise_hydrate = load(paths.hydrate, {log_loading_errors:false}).catch(err=>false); // if cant load, return false
+        var promise_dom = this.retreive_dom_from_html_path(paths.html); // not optional
+        var promise_generate = (typeof paths.generate == "string")? load(paths.generate).catch(err=>false) : false; // optional
+        var promise_hydrate = (typeof paths.hydrate == "string")? load(paths.hydrate).catch(err=>false) : false; // optional
         var dom = await promise_dom;
         var generate = await promise_generate;
         var hydrate = await promise_hydrate;
@@ -48,6 +49,7 @@ var resource_loader = {
             // derive components root based on packagejson
             var component_root = module_root_path; // by default its in module_root_path
             if(typeof package_json.components == "string") component_root += "/" + package_json.components; // and the default can be modified by package_json.components
+            if(typeof package_json.components == "object" && typeof package_json.components.root == "string") component_root += "/" + package_json.components.root; // or by package_json.components.root
         } else { // else we're given an absolute or a relative path to the dir of the view.
             var component_root = request;
         }
@@ -57,6 +59,12 @@ var resource_loader = {
             generate : component_root + "/generate.js",
             hydrate : component_root + "/hydrate.js",
             html : component_root + "/view.html",
+        }
+
+        // update paths based on whether package_json.component, if availible (i.e., if this is a module)
+        if(typeof package_json == "object" && typeof package_json.components == "object"){
+            if(typeof package_json.components.generate != "undefined") paths.generate = package_json.components.generate;
+            if(typeof package_json.components.hydrate != "undefined") paths.hydrate = package_json.components.hydrate;
         }
 
         //return paths

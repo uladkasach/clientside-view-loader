@@ -34,6 +34,22 @@ describe('path finding', function(){
         var component_root_found = paths.generate.split("/").slice(0,-1).join("/"); // remove file name from path
         assert.equal(component_root_found,  window.clientside_require.modules_root+"/"+module_name+"/src");
     })
+    it('should determine component_root is defined by package_json.component.root',  async function(){
+        var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
+        window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+        var module_name = "defined_path_view_module_2";
+        var paths = await resource_loader.retreive_paths(module_name);
+        var component_root_found = paths.generate.split("/").slice(0,-1).join("/"); // remove file name from path
+        assert.equal(component_root_found,  window.clientside_require.modules_root+"/"+module_name+"/src");
+    })
+    it('should determine generate and hydrate do not exist based on package_json.component',  async function(){
+        var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
+        window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+        var module_name = "define_components";
+        var paths = await resource_loader.retreive_paths(module_name);
+        assert.equal(paths.hydrate, false);
+        assert.equal(paths.generate, false);
+    })
 })
 describe('loading resources', function(){
     it('should only load dom for dom only view',  async function(){

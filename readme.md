@@ -57,7 +57,7 @@ var build = async function(options, render_location){
 ```
 *Note: the above is not the full build function but demonstrates the main logic.*
 
-The `generate` function is used to build views dynamically. The `hydrate` function is used to append functionality to the rendered `dom` (e.g., `login_dom.show('signup')` or `cart_dom.update_item_count()`). `generate` and `hydrate` are explicitly separated to support server side rendering. 
+The `generate` function is used to build views dynamically. The `hydrate` function is used to append functionality to the rendered `dom` (e.g., `login_dom.show('signup')` or `cart_dom.update_item_count()`). `generate` and `hydrate` are explicitly separated to support server side rendering.
 
 #### Server Side Rendering
 Server side rendering is as simple as setting up a `proxy` server and in your code telling the `build` function that `render_location="server"`. Example:
@@ -85,3 +85,15 @@ After publishing the module and later installing it in a project you'd like to u
 #### components
 You can modify the directory in which the view-loader will search for your components by defining the `components` property in the package.json.
 For example, if you want the view-loader to look for components in the directory "src", set `"components" : "src"`.
+
+You can additionally tell the view-loader that the module does not have a `hydrate` or a `generate` script. This way, the loader will not spend time attempting to open the file and will not produce a 404 error in your console. This can be done by, for example, setting `"components" : { "generate" : false, "hydrate" : "path/to/hydrate"}`.
+
+To do both,
+```json
+"components" : {
+    "root" : "src",
+    "generate" : false,
+    "hydrate" : "path/to/hydrate"
+}
+
+```
