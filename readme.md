@@ -10,93 +10,78 @@ This is a npm nodule for the front end ([a clientside-require based module](http
 `npm install clientside-view-loader --save`
 
 
-## Example Usage
+## Example
 
 ```js
 load("clientside-view-loader")
-    .then((view)=>{
-        return view.load("views/modal/login_signup").generate()
-    })
-    .then((element)=>{
-        document.querySelector("html").appendChild(element);
-        element.show("login");  // functionality defined in /_views/modal/login_signup
+    .then(view=>view.load("clientside-view-modal-login_signup").build()) // installable with `npm install clientside-view-modal-login_signup`
+    .then((dom)=>{
+        document.querySelector("html").appendChild(dom);
+        dom.show("login");  // functionality attached to the dom element with `hydrate.js`
     })
 ```
-*note: this assumes you have already loaded the [clientside-module-manager](https://github.com/uladkasach/clientside-module-manager), for the `require()` functionality, into the window*
+*note: this assumes you have already loaded the [clientside-require](https://github.com/uladkasach/clientside-require), for the `load()` functionality, into the window*
 
 
 ## Usage
 
-A view element is is a DOM element, based in an html file `view.html`, which optionally requires a `view.css`.
-`index.js` of the view will be given (`dom`) after all resources have loaded
+A view is created based on an html file, `view.html`, an optional `generate()` function defined in `generate.js`, and an optional `hydrate()` function defined in `hydrate.js`. `css` dependencies can also be easily loaded.
 
-### simple example
 
-*directory structure*
+*example directory structure*
+
 ```
-a-cool-view/
+your-view/
+    generate.js
+    hydrate.js
     view.html
-    index.js
-project.html
+    styles.css
 ```
 
-
-*project.html*
-```html
-<script src = "/node_modules/clientside-module-manager/src/index.js"></script> <!-- defines require, promise_require, and cmm in global scope -->
-<script>
-    load("clientside-view-loader")
-        .then((view)=>{
-            view.load("a-cool-view").generate()
-                .then((element)=>{
-                    document.querySelector("body").appendChild(element);
-                })
-        })
-</script>
-```
-
-
-*a-cool-view/view.html*
-```html
-<div>
-    hello world!
-</div>
-```
-
-*a-cool-view/index.js*
+After defining all view components you wish to define, you can load the view by passing the path to the directory where the components are found to the view loader. The resolves with a build function:
 ```js
-var builder = {
-    generate : function(dom_clone, options){
-        var element = dom_clone; // a clone of the dom is automatically injected. you can modify it explicitly and not disturb the "template" for future renders
+var path_to_components = "/your-view"
+var promise_build_function = load('clientside-view-loader')
+    .then(view=>view.load(path_to_components))
+    .then(build=>...)
+```
 
-        // manipulate the element dom
-        // attach element functionality
-        element.innerHTML = "woo!";
-
-        return element;
-    },
+The build function takes the DOM generated from the `view.html` file, passes it through the `generate` function (if defined), passes the result to the `hydrate` function (if defined), and returns the result. Generally:
+```js
+var build = async function(options, render_location){
+    var dom = dom.cloneNode(true); // 1. deep clone dom
+    if(generate_is_defined) dom = generate(dom, options) // 2. generate if defined
+    if(hydrate_is_defined) dom = hydrate(dom, options); // 3. hydrate if defined
+    return dom; // return the generated and hydrated dom
 }
+```
+*Note: the above is not the full build function but demonstrates the main logic.*
 
-module.exports = builder; // see github.com/uladkasach/clientside-module-manager for more information
-                          // builder is then cached to the view module
+The `generate` function is used to build views dynamically. The `hydrate` function is used to append functionality to the rendered `dom` (e.g., `login_dom.show('signup')` or `cart_dom.update_item_count()`). `generate` and `hydrate` are explicitly separated to support server side rendering. 
+
+#### Server Side Rendering
+Server side rendering is as simple as setting up a `proxy` server and in your code telling the `build` function that `render_location="server"`. Example:
+```js
+view.load(path_to_components).build(options, "server");
 ```
 
+Details on setting up the proxy server and server side rendering with clientside-view-loader can be found in [this thorough tutorial]().
+
+#### More Documentation
+The most precise documentation will always be found in the `/test` directory. It has been written to facilitate readability. Please navigate it for more examples with verbal descriptions of what the module can do.
+
+# Examples
+coming soon
+
+### extended examples
+check out the `/test/env/` directory for fully working examples.
 
 
-### example with functionality
-```html
-<script>
-    load("clientside-view-loader")
-        .then((view)=>{
-            return view.load("views/modal/login_signup").generate()
-        })
-        .then((element)=>{
-            document.querySelector("html").appendChild(element);
-            element.show("login");  // functionality defined in /_views/modal/login_signup
-        })
-</script>
-```
+# Building a View Module
+Typically it is best to build a working view before packaging the view as a reusable module. After you have a working `generate.js`, `view.html`, and optional `hydrate.js`, build a npm module that contains these files and list `clientside-view-loader` as a dependency.
 
-
-### extended example
-check out the `/test/env/` directory for a fully working extended example.
+After publishing the module and later installing it in a project you'd like to use it in, you will be able to load the view by module name. (e.g., `view.load("module_name").build()`
+### package.json options
+#### components
+You can modify the directory in which the view-loader will search for your components by defining the `components` property in the package.json.
+For example, if you want the view-loader to look for components in the directory "src", set `"components" : "src"`.
