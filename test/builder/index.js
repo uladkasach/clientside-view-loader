@@ -57,6 +57,38 @@ describe('building', function(){
         assert.equal(dom.outerHTML, "<div>hello</div>");
         assert.equal(typeof dom.awesome_action, "function", "a method should have been added to the dom element after hydration");
     })
+    it('should be able to handle async generate', async function(){
+        // load resources
+        var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
+        window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+        var resources = await resource_loader.load_resources("async_generate");
+
+        // create builder
+        var Builder = await window.clientside_require.asynchronous_require(builder_path);
+        var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
+
+        // build
+        var dom = await builder.build();
+
+        // make sure the content is expected
+        assert.equal(dom.outerHTML, "<div>hello<img></div>");
+    })
+    it('should be able to handle async hydrate', async function(){
+        // load resources
+        var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
+        window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+        var resources = await resource_loader.load_resources("async_hydrate");
+
+        // create builder
+        var Builder = await window.clientside_require.asynchronous_require(builder_path);
+        var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
+
+        // build
+        var dom = await builder.build();
+
+        // make sure the content is expected
+        assert.equal(typeof dom.awesome_action, "function", "a method should have been added to the dom element after hydration");
+    })
 })
 return;
 describe('serverside_rendering', function(){
