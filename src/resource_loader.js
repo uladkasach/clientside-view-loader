@@ -18,6 +18,10 @@ var resource_loader = {
         var generate = await promise_generate;
         var hydrate = await promise_hydrate;
 
+        // validate resources
+        if(generate !== false && typeof generate != "function") throw new Error("generate must export a function");
+        if(hydrate !== false && typeof hydrate != "function") throw new Error("hydrate must export a function");
+
         // return resources
         return {
             generate : generate,

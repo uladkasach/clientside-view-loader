@@ -79,4 +79,24 @@ describe('loading resources', function(){
         var resources = await resource_loader.load_resources("dom_generate_hydrate");
         assert.equal(typeof resources.hydrate, "function");
     })
+    it('should complain if generate is not properly defined',  async function(){
+        var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
+        window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+        try {
+            var resources = await resource_loader.load_resources("invalid_generate");
+            throw new Error("should not reach here");
+        } catch(error){
+            assert.equal(error.message, "generate must export a function");
+        }
+    })
+    it('should complain if hydrate is not properly defined',  async function(){
+        var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
+        window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+        try {
+            var resources = await resource_loader.load_resources("invalid_hydrate");
+            throw new Error("should not reach here");
+        } catch(error){
+            assert.equal(error.message, "hydrate must export a function");
+        }
+    })
 })
