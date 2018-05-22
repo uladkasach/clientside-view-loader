@@ -1,7 +1,7 @@
 {
   "name": "clientside-view-loader",
-  "version": "2.2.1",
-  "description": "clientside module which simplifies loading views (html, css, and view compiler)",
+  "version": "2.3.0",
+  "description": "a clientside module which simplifies loading views (html, css, and javascript) and additionally supports server side rendering",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

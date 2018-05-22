@@ -90,7 +90,6 @@ describe('building', function(){
         assert.equal(typeof dom.awesome_action, "function", "a method should have been added to the dom element after hydration");
     })
 })
-return;
 describe('serverside_rendering', function(){
     describe('render_location', function(){
         /*
@@ -103,15 +102,258 @@ describe('serverside_rendering', function(){
                 2. clientside-view-loader then checks to see if the dom is rendered already (with the identifier).
                     - if already rendered, the dom was rendered on the server and only needs to be hydrated.
                     - if not already rendered, the dom needs to be fully rendered
-                x. (meta step) - if render_location = server, the `hydrator.js` script must be defined by the view.
             - when render_location = client (by default):
                 1. append promise_not_server_rendering to the dom loading chain so that it does not render on the server
         */
-        it('should complain if the `hydrator` script is not found')
-        it('should be able to create a unique identifier for a view.generate() request')
-        it('should render a dom element with a unique id if not already rendered')
-        it('should be able to find a dom element that has already been rendered on the server') // use unique id
-        it('should not re-render a dom element that has already been rendered')
-        it('should hydrate a dom element that has already been rendered')
+        it('should be able to create a unique identifier for a build request', async function(){
+            // create builder
+            var Builder = await window.clientside_require.asynchronous_require(builder_path);
+            var builder = new Builder(null, null, null, 'an_awesome_view');
+            var unique_identifier = builder.generate_unique_identifier();
+        })
+        it('should create unique identifiers even if view and options are identical', async function(){
+            // create builder
+            var Builder = await window.clientside_require.asynchronous_require(builder_path);
+            var builder = new Builder(null, null, null, 'an_awesome_view');
+            var unique_identifier_one = builder.generate_unique_identifier();
+            var unique_identifier_two = builder.generate_unique_identifier();
+            assert.notEqual(unique_identifier_one, unique_identifier_two);
+        })
+        it('should render a dom element with a unique id if not already rendered - for server side', async function(){
+            // load resources
+            var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            var resources = await resource_loader.load_resources("dom_only");
+
+            // create builder
+            var Builder = await window.clientside_require.asynchronous_require(builder_path);
+            var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
+
+            // build
+            var dom = await builder.build(null, "server");
+
+            // make sure the content is expected
+            assert.equal(dom.outerHTML, '<div serverside_rendering_identifier="dW5kZWZpbmVkLW51bGwtMA==">hello</div>');
+            assert.equal(typeof dom.getAttribute("serverside_rendering_identifier"), "string", "serverside_rendering_identifier should be a string");
+        })
+        it('should be able to find a dom element that has already been rendered', async function(){
+            // load resources
+            var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            var resources = await resource_loader.load_resources("dom_only");
+
+            // create builder
+            var Builder = await window.clientside_require.asynchronous_require(builder_path);
+            var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
+
+            // build
+            var dom = await builder.build(null, "server");
+
+            // make sure the content is expected
+            assert.equal(dom.outerHTML, '<div serverside_rendering_identifier="dW5kZWZpbmVkLW51bGwtMA==">hello</div>');
+            assert.equal(typeof dom.getAttribute("serverside_rendering_identifier"), "string", "serverside_rendering_identifier should be a string");
+
+            // attach the dom to the document
+            window.document.body.appendChild(dom);
+
+            // get the identifier
+            var serverside_rendering_identifier = dom.getAttribute("serverside_rendering_identifier");
+
+            // search for the element
+            var found_dom = window.document.querySelector("[serverside_rendering_identifier='"+serverside_rendering_identifier+"']");
+
+            // assert element is the same
+            assert.equal(dom, found_dom);
+
+            // remove the element from dom to conclude the test
+            dom.remove();
+        })
+        it('should be able to find a dom element that has already been rendered - build method', async function(){
+            // load resources
+            var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            var resources = await resource_loader.load_resources("dom_only");
+
+            // create builder
+            var Builder = await window.clientside_require.asynchronous_require(builder_path);
+            var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
+
+            // build
+            var dom = await builder.build(null, "server");
+
+            // make sure the content is expected
+            assert.equal(dom.outerHTML, '<div serverside_rendering_identifier="dW5kZWZpbmVkLW51bGwtMA==">hello</div>');
+            assert.equal(typeof dom.getAttribute("serverside_rendering_identifier"), "string", "serverside_rendering_identifier should be a string");
+
+            // attach the dom to the document
+            window.document.body.appendChild(dom);
+
+            // get the identifier
+            var serverside_rendering_identifier = dom.getAttribute("serverside_rendering_identifier");
+
+            // reset the builders build_id_enumerator
+            builder.build_id_enumerator = 0;
+
+            // build again - we should find the already made element and not have rendered it again
+            var found_dom = await builder.build(null, "server");
+
+            // get found dom identifier
+            var found_serverside_rendering_identifier = found_dom.getAttribute("serverside_rendering_identifier");
+
+            // assert that it was not re-rendered
+            assert.equal(serverside_rendering_identifier, found_serverside_rendering_identifier, "identifiers should be equal") // this is more of checking that it finds the element correctly
+            assert.equal(dom, found_dom); // the objects should be equal
+
+            // remove the element from dom to conclude the test
+            dom.remove();
+        })
+        it('should not re-render a dom element that has already been rendered', async function(){
+            // load resources
+            var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            var resources = await resource_loader.load_resources("dom_only");
+
+            // create builder
+            var Builder = await window.clientside_require.asynchronous_require(builder_path);
+            var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
+
+            // build
+            var dom = await builder.build(null, "server");
+
+            // make sure the content is expected
+            assert.equal(dom.outerHTML, '<div serverside_rendering_identifier="dW5kZWZpbmVkLW51bGwtMA==">hello</div>');
+
+            // attach the dom to the document
+            window.document.body.appendChild(dom);
+
+            // modify the dom - we will check that this modification persists
+            dom.className = "modification";
+
+            // reset the builders build_id_enumerator
+            builder.build_id_enumerator = 0;
+
+            // build again - we should find the already made element and not have rendered it again
+            var found_dom = await builder.build(null, "server");
+
+            // assert that it was not re-rendered
+            assert.equal(dom.className, "modification", "class name should have remained") // if we re-render it, the classname would have dissapeared
+
+            // remove the element from dom to conclude the test
+            dom.remove();
+        })
+        it('should not re-generate a dom element that has already been rendered', async function(){
+            // load resources
+            var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            var resources = await resource_loader.load_resources("dom_generate");
+
+            // create builder
+            var Builder = await window.clientside_require.asynchronous_require(builder_path);
+            var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
+
+            // build
+            var dom = await builder.build(null, "server");
+
+            // make sure the content is expected
+            assert.equal(dom.outerHTML, '<div serverside_rendering_identifier="dW5kZWZpbmVkLW51bGwtMA==">hello<img></div>');
+
+            // attach the dom to the document
+            window.document.body.appendChild(dom);
+
+            // reset the builders build_id_enumerator
+            builder.build_id_enumerator = 0;
+
+            // build again - we should find the already made element and not have rendered it again
+            var found_dom = await builder.build(null, "server");
+
+            // assert that it was not re-generated
+            assert.equal(dom.querySelectorAll("img").length, 1, "there should only be one image"); // if regenerated, then two image elements would be provided
+            assert.equal(dom.outerHTML, '<div serverside_rendering_identifier="dW5kZWZpbmVkLW51bGwtMA==">hello<img></div>');
+
+            // remove the element from dom to conclude the test
+            dom.remove();
+        })
+        it('should not hydrate a dom that is being built on the server', async function(){
+            // load resources
+            var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            var resources = await resource_loader.load_resources("dom_hydrate");
+
+            // create builder
+            var Builder = await window.clientside_require.asynchronous_require(builder_path);
+            var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
+
+            // define that we are rendering on server
+            window.currently_rendering_on_server = true;
+
+            // build
+            var dom = await builder.build(null, "server");
+
+            // make sure the content is expected
+            assert.equal(dom.outerHTML, '<div serverside_rendering_identifier="dW5kZWZpbmVkLW51bGwtMA==">hello</div>');
+            assert.equal(typeof dom.awesome_action, "undefined", "the method attached to the dom during hydration should not have been attached");
+
+            // remove the window property to clean up after test
+            window.currently_rendering_on_server = null;
+        })
+        it('should hydrate a dom that has already been rendered, on the client', async function(){
+            // load resources
+            var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            var resources = await resource_loader.load_resources("dom_hydrate");
+
+            // create builder
+            var Builder = await window.clientside_require.asynchronous_require(builder_path);
+            var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
+
+            /*
+                generate on "server"
+            */
+            // define that we are rendering on server
+            window.currently_rendering_on_server = true;
+
+            // build
+            var dom = await builder.build(null, "server");
+
+            // make sure the content is expected
+            assert.equal(typeof dom.awesome_action, "undefined", "the method attached to the dom during hydration should not have been attached");
+
+            // change environment to client
+            window.currently_rendering_on_server = null; // not currently_rendering_on_server
+            builder.build_id_enumerator = 0; // restart the build_id_enumerator
+
+            /*
+                hydrate on "client"
+            */
+            // build
+            var dom = await builder.build(null, "server");
+
+            // check that it was hydrated
+            assert.equal(typeof dom.awesome_action, "function", "a method should have been added to the dom element after hydration");
+        })
+        it('should not build views on the server that are ment to be rendered on the client', async function(){
+            // load resources
+            var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            var resources = await resource_loader.load_resources("dom_only");
+
+            // create builder
+            var Builder = await window.clientside_require.asynchronous_require(builder_path);
+            var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
+
+            // define that we are rendering on server
+            window.currently_rendering_on_server = true;
+
+            // build
+            try {
+                var dom = await builder.build(null);
+                throw new Error("should not have reached here");
+            } catch(err) {
+                assert.equal(err.message, "Will not render client view on server. This rejection is on purpose.")
+            }
+
+            // remove the window property to clean up after test
+            window.currently_rendering_on_server = null;
+        })
     })
 })
