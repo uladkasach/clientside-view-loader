@@ -31,9 +31,9 @@ var view_loader = {
         /*
             append the .build() function to the promise returned by load to enable `.load().build()`
         */
-        promise_build_function.build = function(options){
+        promise_build_function.build = function(options, render_location){
             return this.then((build)=>{
-                return build(options);
+                return build(options, render_location);
             })
         }
 
