@@ -1,6 +1,7 @@
 var assert = require('assert');
 var resource_loader_path = process.env.src_root + "/resource_loader.js";
 var builder_path = process.env.src_root + "/builder.js";
+var Dynamic_Serial_Promise_All = require("dynamic-serial-promise-all");
 
 describe('syntax', function(){
     it('should be loadable', async function(){
@@ -285,6 +286,7 @@ describe('serverside_rendering', function(){
 
             // define that we are rendering on server
             window.currently_rendering_on_server = true;
+            window.content_rendered_manager = new Dynamic_Serial_Promise_All();
 
             // build
             var dom = await builder.build(null, "server");
@@ -295,6 +297,7 @@ describe('serverside_rendering', function(){
 
             // remove the window property to clean up after test
             window.currently_rendering_on_server = null;
+            window.content_rendered_manager = null;
         })
         it('should hydrate a dom that has already been rendered, on the client', async function(){
             // load resources
@@ -311,6 +314,7 @@ describe('serverside_rendering', function(){
             */
             // define that we are rendering on server
             window.currently_rendering_on_server = true;
+            window.content_rendered_manager = new Dynamic_Serial_Promise_All();
 
             // build
             var dom = await builder.build(null, "server");
@@ -320,6 +324,7 @@ describe('serverside_rendering', function(){
 
             // change environment to client
             window.currently_rendering_on_server = null; // not currently_rendering_on_server
+            window.content_rendered_manager = null;
             builder.build_id_enumerator = 0; // restart the build_id_enumerator
 
             /*
@@ -343,6 +348,7 @@ describe('serverside_rendering', function(){
 
             // define that we are rendering on server
             window.currently_rendering_on_server = true;
+            window.content_rendered_manager = new Dynamic_Serial_Promise_All();
 
             // build
             try {
@@ -354,6 +360,35 @@ describe('serverside_rendering', function(){
 
             // remove the window property to clean up after test
             window.currently_rendering_on_server = null;
+            window.content_rendered_manager = null;
+        })
+        it('should have `content_rendered_manager.wait_for()` each build() request if `currently_rendering_on_server`', async function(){
+            // load resources
+            var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            var resources = await resource_loader.load_resources("dom_only");
+
+            // create builder
+            var Builder = await window.clientside_require.asynchronous_require(builder_path);
+            var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
+
+            // define that we are rendering on server
+            window.currently_rendering_on_server = true;
+            window.content_rendered_manager = new Dynamic_Serial_Promise_All(10);
+
+            // build on server
+            var dom = await builder.build(null, "server");
+
+            // build on client
+            try{ var dom = await builder.build(null); } catch(err){}
+
+            // check that promise content rendered was set
+            var content_rendered = await window.content_rendered_manager.promise_all;
+            assert.equal(content_rendered.length, 2, "we should find exactly two dom's that we were waiting for");
+
+            // remove the window properties to clean up after test
+            window.currently_rendering_on_server = null;
+            window.content_rendered_manager = null;
         })
     })
 })

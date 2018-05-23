@@ -7,6 +7,7 @@ process.env.test_env_root = __dirname + "/_env"
 var jsdom = require("jsdom");
 var xmlhttprequest = require("xmlhttprequest");
 var assert = require("assert");
+var Dynamic_Serial_Promise_All = require("dynamic-serial-promise-all");
 
 /*
     provision environment to mimic browser environment
@@ -63,7 +64,7 @@ describe('load', function(){
     })
     describe('caching', function(){
         /*
-            1. prevents redundent commands
+            1. prevents redundent commands / speeds up loading
             2. eliminates problems that arise from creating more than one 'builder' for the same object
                 - critical for server side rendering in making the unique identifier
         */
@@ -99,6 +100,30 @@ describe('load', function(){
             var options = "option_data";
             var content = await view_loader.load("pass_options_back_module").build(options);
             assert.equal(content, options, "ensure the module returns the options");
+        })
+    })
+    describe('serverside_rendering', function(){
+        it('should ask `window.content_rendered_manager` to `wait_for()` for every `load()` that is requested', async function(){
+            /*
+                this is nessesary, in `currently_rendering_on_server` mode only, so that we wait untill all async content is fully rendered.
+            */
+            // define that we are rendering on server
+            window.currently_rendering_on_server = true;
+            window.content_rendered_manager = new Dynamic_Serial_Promise_All(10);
+
+            // build on server
+            var view_loader = await window.clientside_require.asynchronous_require(view_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            var build = await view_loader.load("dom_only");
+            var dom = await build(null, "server");
+
+            // check that promise content rendered was set
+            var content_rendered = await window.content_rendered_manager.promise_all;
+            assert.equal(content_rendered.length, 2, "we should find the build function and the dom that we were waiting for");
+
+            // remove the window properties to clean up after test
+            window.currently_rendering_on_server = null;
+            window.content_rendered_manager = null;
         })
     })
 })

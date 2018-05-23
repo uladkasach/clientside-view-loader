@@ -7,6 +7,22 @@ var Builder = function(dom, generate, hydrate, view_identifier){
 }
 Builder.prototype = {
     build : async function(options, render_location){
+        /*
+            note: we sepearate build and _build
+                so that we can ask the server to wait for this build function if `currently_rendering_on_server`
+            _build does the actual work
+        */
+        // define the function
+        var promise_dom = this._build(options, render_location);
+
+        // if `currently_rendering_on_server` is defined, ask `content_rendered_manager` to `wait_for` this promise
+        var currently_rendering_on_server = window.root_window.currently_rendering_on_server === true; // if rendering on server, the root_window will have the property `currently_rendering_on_server` s.t. `currently_rendering_on_server==true`
+        if(currently_rendering_on_server) window.root_window.content_rendered_manager.wait_for(promise_dom.catch(()=>{})); // note, .catch() at the end since build errors just mean that the build function has finished in this context
+
+        // return the function
+        return promise_dom;
+    },
+    _build : async function(options, render_location){
         // define readability constants
         var generate_is_defined = this.generate !== false;
         var hydrate_is_defined = this.hydrate !== false;
@@ -55,6 +71,6 @@ Builder.prototype = {
             return the result
         */
         return identifier;
-    }
+    },
 }
 module.exports = Builder;

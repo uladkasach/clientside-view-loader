@@ -1,6 +1,6 @@
 {
   "name": "clientside-view-loader",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "a clientside module which simplifies loading views (html, css, and javascript) and additionally supports server side rendering",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -27,9 +27,10 @@
   "author": "UladKasach",
   "license": "ISC",
   "devDependencies": {
+    "dynamic-serial-promise-all": "^1.0.0",
     "jsdom": "^11.6.2",
     "mocha": "^5.0.4",
     "xmlhttprequest": "^1.8.0"
   },
-  "main":"src/index.js"
+  "main": "src/index.js"
 }
