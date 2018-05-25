@@ -50,6 +50,9 @@ Builder.prototype = {
             dom.setAttribute("serverside_rendering_identifier", serverside_rendering_identifier);
         }
 
+        // if the dom was found rendered, attach the `rendered_on_server` attribute to true
+        if(dom_found_rendered) dom.setAttribute('rendered_on_server', true);
+
         // return built dom
         return dom; // return the generated and hydrated dom
     },
