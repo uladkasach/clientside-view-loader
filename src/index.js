@@ -11,7 +11,7 @@ var view_loader = {
                     - this eliminates relative path complexity (we do not need to forward the relative_path_root of the script that called the load function)
         */
         var promise_build_in_cache = cache.find(request);
-        if(typeof promise_build_in_cache == "function") return promise_build_in_cache; // if found, return it; if not, we continue
+        if(typeof promise_build_in_cache == "object") return promise_build_in_cache; // if found, return it; if not, we continue
 
         /*
             promise to load the view and retreive the compiler
