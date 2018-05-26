@@ -538,7 +538,7 @@ describe('serverside_rendering', function(){
             var dom = await builder.build(null, "server");
 
             // make sure the content is expected
-            assert.equal(dom.outerHTML, '<div ssr-enumerator="1" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello<div ssr-enumerator="1" ssr-view_identifier="/var/www/git/More/clientside-view-loader/test/_env/custom_node_modules/dom_hydrate" ssr-build_options="bnVsbA==">hello</div></div>');
+            assert.equal(dom.outerHTML, '<div ssr-enumerator="1" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello<div ssr-enumerator="2" ssr-view_identifier="/var/www/git/More/clientside-view-loader/test/_env/custom_node_modules/dom_hydrate" ssr-build_options="bnVsbA==">hello</div></div>');
 
             // attach the dom to the document
             window.document.body.appendChild(dom);

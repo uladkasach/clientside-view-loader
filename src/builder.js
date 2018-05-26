@@ -7,7 +7,7 @@ var Builder = function(dom, generate, hydrate, view_identifier){
     this.build_id_enumerator = 0;
 }
 Builder.prototype = {
-    build : async function(options, render_location){
+    build : async function(options, render_location, dom_to_hydrate){
         // normalize options
         if(typeof options == "undefined") options = null;
 
@@ -17,7 +17,7 @@ Builder.prototype = {
             _build does the actual work
         */
         // define the function
-        var promise_dom = this._build(options, render_location);
+        var promise_dom = this._build(options, render_location, dom_to_hydrate);
 
         // if `currently_rendering_on_server` is defined, ask `content_rendered_manager` to `wait_for` this promise
         var currently_rendering_on_server = window.root_window.currently_rendering_on_server === true; // if rendering on server, the root_window will have the property `currently_rendering_on_server` s.t. `currently_rendering_on_server==true`
@@ -26,7 +26,7 @@ Builder.prototype = {
         // return the function
         return promise_dom;
     },
-    _build : async function(options, render_location){
+    _build : async function(options, render_location, dom){
         // define reused constants
         var encoded_options = window.btoa(JSON.stringify(options));
 
@@ -34,6 +34,7 @@ Builder.prototype = {
         var generate_is_defined = this.generate !== false;
         var hydrate_is_defined = this.hydrate !== false;
         var render_on_server = !(render_location == "client"); // if not on client, assume render on server
+        var hydrate_provided_dom = render_location === "hydrate"; // defined if we should be hydrating a child node
         var currently_rendering_on_server = window.root_window.currently_rendering_on_server === true; // if rendering on server, the root_window will have the property `currently_rendering_on_server` s.t. `currently_rendering_on_server==true`
 
         // if currently_rendering_on_server and render_on_server not requested, throw error to reject the promise this async function returns;
@@ -43,14 +44,15 @@ Builder.prototype = {
         // if render_on_server requested, generate a unique_identifier and check that it has not already been rendered
         if(render_on_server){
             this.build_id_enumerator += 1; // enumerate build ids
-            var dom = window.root_window.document.querySelector('[ssr-enumerator="'+this.build_id_enumerator+'"][ssr-view_identifier="'+this.view_identifier+'"][ssr-build_options="'+encoded_options+'"]'); // try to find dom element
+            var query_string = '[ssr-enumerator="'+this.build_id_enumerator+'"][ssr-view_identifier="'+this.view_identifier+'"][ssr-build_options="'+encoded_options+'"]';
+            if(!hydrate_provided_dom) var dom = window.root_window.document.querySelector(query_string); // try to find dom element; if hydrate_provided_dom, no need to look
         }
         var dom_found_rendered = (typeof dom != "undefined" && dom != null); // dom was found rendered if object is not undefined and not null
 
-        // if rendered_on_server, hydrate any rendered view elements that are inside of this view
-        if(dom_found_rendered){
+        // if rendered_on_server, hydrate any rendered view elements that are inside of this view; if hydrate_provided_dom, then dont do this as a .build has already found all this elements potential rendered children
+        if(dom_found_rendered && !hydrate_provided_dom){
             var rendered_children = dom.querySelectorAll('[ssr-enumerator]');
-            for(let child of rendered_children) await this.hydrate_rendered_child(child);
+            for(let child of rendered_children) await this.hydrate_rendered_child(child, dom);
         }
 
         // build
@@ -79,12 +81,13 @@ Builder.prototype = {
         return dom; // return the generated and hydrated dom
     },
     hydrate_rendered_child : async function(child){
+        var build_enumerator = child.getAttribute('ssr-enumerator');
+        var view_identifier = child.getAttribute('ssr-view_identifier');
         var build_options_encoded = child.getAttribute('ssr-build_options');
         var build_options_string = window.atob(build_options_encoded);
         var build_options = JSON.parse(build_options_string);
-        var view_identifier = child.getAttribute('ssr-view_identifier');
         var view_loader = await promise_view_loader;
-        await view_loader.load(view_identifier).build(build_options); // run build to hydrate the element
+        await view_loader.load(view_identifier).build(build_options, "hydrate", child); // run build to hydrate the element
     },
 }
 module.exports = Builder;

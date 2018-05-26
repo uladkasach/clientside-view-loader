@@ -7,5 +7,8 @@ module.exports = {
     },
     set : function(identifier, data){
         this._cache[identifier] = data;
+    },
+    reset : function(){
+        this._cache = {}
     }
 }

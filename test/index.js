@@ -111,9 +111,14 @@ describe('load', function(){
             window.currently_rendering_on_server = true;
             window.content_rendered_manager = new Dynamic_Serial_Promise_All(10);
 
-            // build on server
+            // get the view loader
             var view_loader = await window.clientside_require.asynchronous_require(view_loader_path);
             window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+
+            // reset the cache
+            var cache = await window.clientside_require.asynchronous_require(cache_path); // note that we get a reference to the one cache object
+            cache.reset();
+
             var build = await view_loader.load("dom_only");
             var dom = await build(null, "server");
 
