@@ -26,7 +26,7 @@ Builder.prototype = {
         // define readability constants
         var generate_is_defined = this.generate !== false;
         var hydrate_is_defined = this.hydrate !== false;
-        var render_on_server = render_location == "server"; // otherwise, assume render on client
+        var render_on_server = !(render_location == "client"); // if not on client, assume render on server
         var currently_rendering_on_server = window.root_window.currently_rendering_on_server === true; // if rendering on server, the root_window will have the property `currently_rendering_on_server` s.t. `currently_rendering_on_server==true`
 
         // if currently_rendering_on_server and render_on_server not requested, throw error to reject the promise this async function returns;
@@ -36,7 +36,7 @@ Builder.prototype = {
         // if render_on_server requested, generate a unique_identifier and check that it has not already been rendered
         if(render_on_server){
             var serverside_rendering_identifier = this.generate_unique_identifier(options); // generate unique id
-            var dom = window.root_window.document.querySelector('[serverside_rendering_identifier="'+serverside_rendering_identifier+'"]');
+            var dom = window.root_window.document.querySelector('[serverside_rendering_identifier="'+serverside_rendering_identifier+'"]'); // try to find dom element
         }
         var dom_found_rendered = (typeof dom != "undefined" && dom != null); // dom was found rendered if object is not undefined and not null
 
@@ -46,7 +46,7 @@ Builder.prototype = {
         if(hydrate_is_defined && !currently_rendering_on_server) dom = await this.hydrate(dom, options); // 3. hydrate if defined; dont hydrate if rendering on server
 
         // if render_on_server requested and the element was not already found rendered, attach the serverside_rendering_identifier to the newly rendered dom
-        if(render_on_server && !dom_found_rendered){
+        if(render_on_server && !dom_found_rendered && currently_rendering_on_server){ // only attach dom id if currently_rendering_on_server
             dom.setAttribute("serverside_rendering_identifier", serverside_rendering_identifier);
         }
 

@@ -130,12 +130,62 @@ describe('serverside_rendering', function(){
             var Builder = await window.clientside_require.asynchronous_require(builder_path);
             var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
 
+            // define that we are rendering on server
+            window.currently_rendering_on_server = true;
+            window.content_rendered_manager = new Dynamic_Serial_Promise_All();
+
             // build
             var dom = await builder.build(null, "server");
 
             // make sure the content is expected
             assert.equal(dom.outerHTML, '<div serverside_rendering_identifier="dW5kZWZpbmVkLW51bGwtMA==">hello</div>');
             assert.equal(typeof dom.getAttribute("serverside_rendering_identifier"), "string", "serverside_rendering_identifier should be a string");
+
+            // remove the window property to clean up after test
+            window.currently_rendering_on_server = null;
+            window.content_rendered_manager = null;
+        })
+        it('should render a dom element on the server by default', async function(){
+            // load resources
+            var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            var resources = await resource_loader.load_resources("dom_only");
+
+            // create builder
+            var Builder = await window.clientside_require.asynchronous_require(builder_path);
+            var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
+
+            // define that we are rendering on server
+            window.currently_rendering_on_server = true;
+            window.content_rendered_manager = new Dynamic_Serial_Promise_All();
+
+            // build
+            var dom = await builder.build(null);
+
+            // make sure the content is expected
+            assert.equal(dom.outerHTML, '<div serverside_rendering_identifier="dW5kZWZpbmVkLW51bGwtMA==">hello</div>');
+            assert.equal(typeof dom.getAttribute("serverside_rendering_identifier"), "string", "serverside_rendering_identifier should be a string");
+
+            // remove the window property to clean up after test
+            window.currently_rendering_on_server = null;
+            window.content_rendered_manager = null;
+        })
+        it('should not produce a serverside_rendering_identifier if not currently_rendering_on_server', async function(){
+            // load resources
+            var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
+            window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
+            var resources = await resource_loader.load_resources("dom_only");
+
+            // create builder
+            var Builder = await window.clientside_require.asynchronous_require(builder_path);
+            var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
+
+            // build
+            var dom = await builder.build(null);
+
+            // make sure the content is expected
+            assert.equal(dom.outerHTML, '<div>hello</div>');
+            assert.equal(dom.getAttribute("serverside_rendering_identifier"), null, "serverside_rendering_identifier should be null");
         })
         it('should be able to find a dom element that has already been rendered', async function(){
             // load resources
@@ -146,6 +196,10 @@ describe('serverside_rendering', function(){
             // create builder
             var Builder = await window.clientside_require.asynchronous_require(builder_path);
             var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
+
+            // define that we are rendering on server
+            window.currently_rendering_on_server = true;
+            window.content_rendered_manager = new Dynamic_Serial_Promise_All();
 
             // build
             var dom = await builder.build(null, "server");
@@ -166,7 +220,9 @@ describe('serverside_rendering', function(){
             // assert element is the same
             assert.equal(dom, found_dom);
 
-            // remove the element from dom to conclude the test
+            // clean up after test
+            window.currently_rendering_on_server = null;
+            window.content_rendered_manager = null;
             dom.remove();
         })
         it('should be able to find a dom element that has already been rendered - build method', async function(){
@@ -178,6 +234,10 @@ describe('serverside_rendering', function(){
             // create builder
             var Builder = await window.clientside_require.asynchronous_require(builder_path);
             var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
+
+            // define that we are rendering on server
+            window.currently_rendering_on_server = true;
+            window.content_rendered_manager = new Dynamic_Serial_Promise_All();
 
             // build
             var dom = await builder.build(null, "server");
@@ -194,6 +254,10 @@ describe('serverside_rendering', function(){
 
             // reset the builders build_id_enumerator
             builder.build_id_enumerator = 0;
+
+            // define we are now again on client
+            window.currently_rendering_on_server = null;
+            window.content_rendered_manager = null;
 
             // build again - we should find the already made element and not have rendered it again
             var found_dom = await builder.build(null, "server");
@@ -218,6 +282,10 @@ describe('serverside_rendering', function(){
             var Builder = await window.clientside_require.asynchronous_require(builder_path);
             var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
 
+            // define that we are rendering on server
+            window.currently_rendering_on_server = true;
+            window.content_rendered_manager = new Dynamic_Serial_Promise_All();
+
             // build
             var dom = await builder.build(null, "server");
 
@@ -232,6 +300,10 @@ describe('serverside_rendering', function(){
 
             // reset the builders build_id_enumerator
             builder.build_id_enumerator = 0;
+
+            // define we are now again on client
+            window.currently_rendering_on_server = null;
+            window.content_rendered_manager = null;
 
             // build again - we should find the already made element and not have rendered it again
             var found_dom = await builder.build(null, "server");
@@ -252,6 +324,10 @@ describe('serverside_rendering', function(){
             var Builder = await window.clientside_require.asynchronous_require(builder_path);
             var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
 
+            // define that we are rendering on server
+            window.currently_rendering_on_server = true;
+            window.content_rendered_manager = new Dynamic_Serial_Promise_All();
+
             // build
             var dom = await builder.build(null, "server");
 
@@ -264,12 +340,16 @@ describe('serverside_rendering', function(){
             // reset the builders build_id_enumerator
             builder.build_id_enumerator = 0;
 
+            // define we are now again on client
+            window.currently_rendering_on_server = null;
+            window.content_rendered_manager = null;
+
             // build again - we should find the already made element and not have rendered it again
             var found_dom = await builder.build(null, "server");
 
             // assert that it was not re-generated
             assert.equal(dom.querySelectorAll("img").length, 1, "there should only be one image"); // if regenerated, then two image elements would be provided
-            assert.equal(dom.outerHTML, '<div serverside_rendering_identifier="dW5kZWZpbmVkLW51bGwtMA==">hello<img></div>');
+            assert.equal(dom.outerHTML, '<div serverside_rendering_identifier="dW5kZWZpbmVkLW51bGwtMA==" rendered_on_server="true">hello<img></div>');
 
             // remove the element from dom to conclude the test
             dom.remove();
@@ -352,7 +432,7 @@ describe('serverside_rendering', function(){
 
             // build
             try {
-                var dom = await builder.build(null);
+                var dom = await builder.build(null, "client");
                 throw new Error("should not have reached here");
             } catch(err) {
                 assert.equal(err.message, "Will not render client view on server. This rejection is on purpose.")
@@ -380,7 +460,7 @@ describe('serverside_rendering', function(){
             var dom = await builder.build(null, "server");
 
             // build on client
-            try{ var dom = await builder.build(null); } catch(err){}
+            try{ var dom = await builder.build(null, "client"); } catch(err){}
 
             // check that promise content rendered was set
             var content_rendered = await window.content_rendered_manager.promise_all;
