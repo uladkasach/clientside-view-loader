@@ -49,8 +49,8 @@ Builder.prototype = {
         }
         var dom_found_rendered = (typeof dom != "undefined" && dom != null); // dom was found rendered if object is not undefined and not null
 
-        // if rendered_on_server, hydrate any rendered view elements that are inside of this view; if hydrate_provided_dom, then dont do this as a .build has already found all this elements potential rendered children
-        if(dom_found_rendered && !hydrate_provided_dom){
+        // if rendered_on_server, hydrate any rendered view elements that are inside of this view;
+        if(dom_found_rendered){
             var rendered_children = dom.querySelectorAll('[ssr-enumerator]');
             for(let child of rendered_children) await this.hydrate_rendered_child(child, dom);
         }
@@ -82,6 +82,7 @@ Builder.prototype = {
     },
     hydrate_rendered_child : async function(child){
         var build_enumerator = child.getAttribute('ssr-enumerator');
+        if(build_enumerator == null) return; // if build_enumerator is now null, then one of the child views was the parent of this child as well and hydrated it
         var view_identifier = child.getAttribute('ssr-view_identifier');
         var build_options_encoded = child.getAttribute('ssr-build_options');
         var build_options_string = window.atob(build_options_encoded);
