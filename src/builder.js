@@ -27,6 +27,9 @@ Builder.prototype = {
         return promise_dom;
     },
     _build : async function(options, render_location){
+        // define reused constants
+        var encoded_options = window.btoa(JSON.stringify(options));
+
         // define readability constants
         var generate_is_defined = this.generate !== false;
         var hydrate_is_defined = this.hydrate !== false;
@@ -39,14 +42,14 @@ Builder.prototype = {
 
         // if render_on_server requested, generate a unique_identifier and check that it has not already been rendered
         if(render_on_server){
-            var serverside_rendering_identifier = this.generate_unique_identifier(options); // generate unique id
-            var dom = window.root_window.document.querySelector('[ssr-identifier="'+serverside_rendering_identifier+'"]'); // try to find dom element
+            this.build_id_enumerator += 1; // enumerate build ids
+            var dom = window.root_window.document.querySelector('[ssr-enumerator="'+this.build_id_enumerator+'"][ssr-view_identifier="'+this.view_identifier+'"][ssr-build_options="'+encoded_options+'"]'); // try to find dom element
         }
         var dom_found_rendered = (typeof dom != "undefined" && dom != null); // dom was found rendered if object is not undefined and not null
 
         // if rendered_on_server, hydrate any rendered view elements that are inside of this view
         if(dom_found_rendered){
-            var rendered_children = dom.querySelectorAll('[ssr-identifier]');
+            var rendered_children = dom.querySelectorAll('[ssr-enumerator]');
             for(let child of rendered_children) await this.hydrate_rendered_child(child);
         }
 
@@ -55,11 +58,11 @@ Builder.prototype = {
         if(generate_is_defined && !dom_found_rendered) dom = await this.generate(dom, options) // 2. generate if defined; dont generate if dom was already found rendered
         if(hydrate_is_defined && !currently_rendering_on_server) dom = await this.hydrate(dom, options); // 3. hydrate if defined; dont hydrate if rendering on server
 
-        // if render_on_server requested and the element was not already found rendered, attach the ssr-identifier, ssr-view_identifier, and ssr-build_options to the newly rendered dom
+        // if render_on_server requested and the element was not already found rendered, attach the ssr-enumerator, ssr-view_identifier, and ssr-build_options to the newly rendered dom
         if(render_on_server && !dom_found_rendered && currently_rendering_on_server){ // only attach dom id if currently_rendering_on_server
-            dom.setAttribute("ssr-identifier", serverside_rendering_identifier);
+            dom.setAttribute("ssr-enumerator", this.build_id_enumerator);
             dom.setAttribute("ssr-view_identifier", this.view_identifier);
-            dom.setAttribute("ssr-build_options", window.btoa(JSON.stringify(options)));
+            dom.setAttribute("ssr-build_options", encoded_options);
         }
 
         // if the dom was found rendered, attach the `rendered_on_server` attribute to true
@@ -67,32 +70,13 @@ Builder.prototype = {
 
         // if the dom was found rendered, remove the ssr-* attributes
         if(dom_found_rendered){
-            dom.removeAttribute("ssr-identifier");
+            dom.removeAttribute("ssr-enumerator");
             dom.removeAttribute("ssr-view_identifier");
             dom.removeAttribute("ssr-build_options");
         }
 
         // return built dom
         return dom; // return the generated and hydrated dom
-    },
-    generate_unique_identifier : function(options){
-        /*
-            unique identifier is used for the hydration of server side rendered elements
-                - upon building on the server, the server appends this id to the rendered element
-                - upon building on the client, the client uses this id to find the rendered element that needs to be hydrated
-        */
-        var identifier = this.view_identifier + "-" + JSON.stringify(options) + "-" + this.build_id_enumerator;
-        identifier = window.btoa(identifier); // encode to make it look better
-
-        /*
-            increment build_id_enumerator
-        */
-        this.build_id_enumerator += 1;
-
-        /*
-            return the result
-        */
-        return identifier;
     },
     hydrate_rendered_child : async function(child){
         var build_options_encoded = child.getAttribute('ssr-build_options');

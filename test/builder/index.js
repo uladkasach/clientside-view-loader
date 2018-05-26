@@ -99,27 +99,13 @@ describe('serverside_rendering', function(){
                 1. clientside-view-loader appends a unique identifier to the generated dom.
                     - unique_identifier = `view_id+generate_options+render_order_id`
                         - see https://github.com/uladkasach/clientside-view-loader/issues/3 for discussion of why
-                    - e.g., `dom_element.setAttribute('ssr-identifier', unique_identifier)`
+                    - e.g., `dom_element.setAttribute('ssr-enumerator', ); dom_element.setAttribute('ssr-view_identifier', ); dom_element.setAttribute('ssr-build_options', )`
                 2. clientside-view-loader then checks to see if the dom is rendered already (with the identifier).
                     - if already rendered, the dom was rendered on the server and only needs to be hydrated.
                     - if not already rendered, the dom needs to be fully rendered
             - when render_location = client (by default):
                 1. append promise_not_server_rendering to the dom loading chain so that it does not render on the server
         */
-        it('should be able to create a unique identifier for a build request', async function(){
-            // create builder
-            var Builder = await window.clientside_require.asynchronous_require(builder_path);
-            var builder = new Builder(null, null, null, 'an_awesome_view');
-            var unique_identifier = builder.generate_unique_identifier();
-        })
-        it('should create unique identifiers even if view and options are identical', async function(){
-            // create builder
-            var Builder = await window.clientside_require.asynchronous_require(builder_path);
-            var builder = new Builder(null, null, null, 'an_awesome_view');
-            var unique_identifier_one = builder.generate_unique_identifier();
-            var unique_identifier_two = builder.generate_unique_identifier();
-            assert.notEqual(unique_identifier_one, unique_identifier_two);
-        })
         it('should render a dom element with a unique id if not already rendered - for server side', async function(){
             // load resources
             var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
@@ -138,8 +124,8 @@ describe('serverside_rendering', function(){
             var dom = await builder.build(null, "server");
 
             // make sure the content is expected
-            assert.equal(dom.outerHTML, '<div ssr-identifier="dW5kZWZpbmVkLW51bGwtMA==" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello</div>');
-            assert.equal(typeof dom.getAttribute("ssr-identifier"), "string", "ssr-identifier should be a string");
+            assert.equal(dom.outerHTML, '<div ssr-enumerator="1" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello</div>');
+            assert.equal(typeof dom.getAttribute("ssr-enumerator"), "string", "ssr-enumerator should be a string");
 
             // remove the window property to clean up after test
             window.currently_rendering_on_server = null;
@@ -163,14 +149,14 @@ describe('serverside_rendering', function(){
             var dom = await builder.build(null);
 
             // make sure the content is expected
-            assert.equal(dom.outerHTML, '<div ssr-identifier="dW5kZWZpbmVkLW51bGwtMA==" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello</div>');
-            assert.equal(typeof dom.getAttribute("ssr-identifier"), "string", "ssr-identifier should be a string");
+            assert.equal(dom.outerHTML, '<div ssr-enumerator="1" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello</div>');
+            assert.equal(typeof dom.getAttribute("ssr-enumerator"), "string", "ssr-enumerator should be a string");
 
             // remove the window property to clean up after test
             window.currently_rendering_on_server = null;
             window.content_rendered_manager = null;
         })
-        it('should not produce a ssr-identifier if not currently_rendering_on_server', async function(){
+        it('should not produce a ssr-* if not currently_rendering_on_server', async function(){
             // load resources
             var resource_loader = await window.clientside_require.asynchronous_require(resource_loader_path);
             window.clientside_require.modules_root = process.env.test_env_root + "/custom_node_modules"; // define new modules root
@@ -185,7 +171,7 @@ describe('serverside_rendering', function(){
 
             // make sure the content is expected
             assert.equal(dom.outerHTML, '<div>hello</div>');
-            assert.equal(dom.getAttribute("ssr-identifier"), null, "ssr-identifier should be null");
+            assert.equal(dom.getAttribute("ssr-enumerator"), null, "ssr-enumerator should be null");
         })
         it('should be able to find a dom element that has already been rendered', async function(){
             // load resources
@@ -205,17 +191,17 @@ describe('serverside_rendering', function(){
             var dom = await builder.build(null, "server");
 
             // make sure the content is expected
-            assert.equal(dom.outerHTML, '<div ssr-identifier="dW5kZWZpbmVkLW51bGwtMA==" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello</div>');
-            assert.equal(typeof dom.getAttribute("ssr-identifier"), "string", "ssr-identifier should be a string");
+            assert.equal(dom.outerHTML, '<div ssr-enumerator="1" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello</div>');
+            assert.equal(typeof dom.getAttribute("ssr-enumerator"), "string", "ssr-enumerator should be a string");
 
             // attach the dom to the document
             window.document.body.appendChild(dom);
 
             // get the identifier
-            var ssr_identifier = dom.getAttribute("ssr-identifier");
+            var ssr_enumerator = dom.getAttribute("ssr-enumerator");
 
             // search for the element
-            var found_dom = window.document.querySelector("[ssr-identifier='"+ssr_identifier+"']");
+            var found_dom = window.document.querySelector("[ssr-enumerator='"+ssr_enumerator+"']");
 
             // assert element is the same
             assert.equal(dom, found_dom);
@@ -243,14 +229,14 @@ describe('serverside_rendering', function(){
             var dom = await builder.build(null, "server");
 
             // make sure the content is expected
-            assert.equal(dom.outerHTML, '<div ssr-identifier="dW5kZWZpbmVkLW51bGwtMA==" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello</div>');
-            assert.equal(typeof dom.getAttribute("ssr-identifier"), "string", "ssr-identifier should be a string");
+            assert.equal(dom.outerHTML, '<div ssr-enumerator="1" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello</div>');
+            assert.equal(typeof dom.getAttribute("ssr-enumerator"), "string", "ssr-enumerator should be a string");
 
             // attach the dom to the document
             window.document.body.appendChild(dom);
 
             // get the identifier
-            var ssr_identifier = dom.getAttribute("ssr-identifier");
+            var ssr_enumerator = dom.getAttribute("ssr-enumerator");
 
             // reset the builders build_id_enumerator
             builder.build_id_enumerator = 0;
@@ -287,7 +273,7 @@ describe('serverside_rendering', function(){
             var dom = await builder.build(null, "server");
 
             // make sure the content is expected
-            assert.equal(dom.outerHTML, '<div ssr-identifier="dW5kZWZpbmVkLW51bGwtMA==" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello</div>');
+            assert.equal(dom.outerHTML, '<div ssr-enumerator="1" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello</div>');
 
             // attach the dom to the document
             window.document.body.appendChild(dom);
@@ -329,7 +315,7 @@ describe('serverside_rendering', function(){
             var dom = await builder.build(null, "server");
 
             // make sure the content is expected
-            assert.equal(dom.outerHTML, '<div ssr-identifier="dW5kZWZpbmVkLW51bGwtMA==" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello<img></div>');
+            assert.equal(dom.outerHTML, '<div ssr-enumerator="1" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello<img></div>');
 
             // attach the dom to the document
             window.document.body.appendChild(dom);
@@ -369,7 +355,7 @@ describe('serverside_rendering', function(){
             var dom = await builder.build(null, "server");
 
             // make sure the content is expected
-            assert.equal(dom.outerHTML, '<div ssr-identifier="dW5kZWZpbmVkLW51bGwtMA==" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello</div>');
+            assert.equal(dom.outerHTML, '<div ssr-enumerator="1" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello</div>');
             assert.equal(typeof dom.awesome_action, "undefined", "the method attached to the dom during hydration should not have been attached");
 
             // remove the window property to clean up after test
@@ -491,7 +477,7 @@ describe('serverside_rendering', function(){
             var dom = await builder.build(null, "server");
 
             // make sure the content is expected
-            assert.equal(dom.outerHTML, '<div ssr-identifier="dW5kZWZpbmVkLW51bGwtMA==" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello<div ssr-identifier="L3Zhci93d3cvZ2l0L01vcmUvY2xpZW50c2lkZS12aWV3LWxvYWRlci90ZXN0L19lbnYvY3VzdG9tX25vZGVfbW9kdWxlcy9kb21fb25seS1udWxsLTA=" ssr-view_identifier="/var/www/git/More/clientside-view-loader/test/_env/custom_node_modules/dom_only" ssr-build_options="bnVsbA==">hello</div></div>');
+            assert.equal(dom.outerHTML, '<div ssr-enumerator="1" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello<div ssr-enumerator="1" ssr-view_identifier="/var/www/git/More/clientside-view-loader/test/_env/custom_node_modules/dom_only" ssr-build_options="bnVsbA==">hello</div></div>');
 
             // remove the window property to clean up after test
             window.currently_rendering_on_server = null;
@@ -515,7 +501,7 @@ describe('serverside_rendering', function(){
             var dom = await builder.build(null, "server");
 
             // make sure the content is expected
-            assert.equal(dom.outerHTML, '<div ssr-identifier="dW5kZWZpbmVkLW51bGwtMA==" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello<div ssr-identifier="L3Zhci93d3cvZ2l0L01vcmUvY2xpZW50c2lkZS12aWV3LWxvYWRlci90ZXN0L19lbnYvY3VzdG9tX25vZGVfbW9kdWxlcy9kb21faHlkcmF0ZS1udWxsLTA=" ssr-view_identifier="/var/www/git/More/clientside-view-loader/test/_env/custom_node_modules/dom_hydrate" ssr-build_options="bnVsbA==">hello</div></div>');
+            assert.equal(dom.outerHTML, '<div ssr-enumerator="1" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello<div ssr-enumerator="1" ssr-view_identifier="/var/www/git/More/clientside-view-loader/test/_env/custom_node_modules/dom_hydrate" ssr-build_options="bnVsbA==">hello</div></div>');
 
             // attach the dom to the document
             window.document.body.appendChild(dom);
@@ -552,7 +538,7 @@ describe('serverside_rendering', function(){
             var dom = await builder.build(null, "server");
 
             // make sure the content is expected
-            assert.equal(dom.outerHTML, '<div ssr-identifier="dW5kZWZpbmVkLW51bGwtMA==" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello<div ssr-identifier="L3Zhci93d3cvZ2l0L01vcmUvY2xpZW50c2lkZS12aWV3LWxvYWRlci90ZXN0L19lbnYvY3VzdG9tX25vZGVfbW9kdWxlcy9kb21faHlkcmF0ZS1udWxsLTA=" ssr-view_identifier="/var/www/git/More/clientside-view-loader/test/_env/custom_node_modules/dom_hydrate" ssr-build_options="bnVsbA==">hello</div></div>');
+            assert.equal(dom.outerHTML, '<div ssr-enumerator="1" ssr-view_identifier="undefined" ssr-build_options="bnVsbA==">hello<div ssr-enumerator="1" ssr-view_identifier="/var/www/git/More/clientside-view-loader/test/_env/custom_node_modules/dom_hydrate" ssr-build_options="bnVsbA==">hello</div></div>');
 
             // attach the dom to the document
             window.document.body.appendChild(dom);
