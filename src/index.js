@@ -23,7 +23,7 @@ var view_loader = {
         */
         var promise_build_function = promise_resources
             .then((resources)=>{
-                var builder = new Builder(resources.dom, resources.generate, resources.hydrate);
+                var builder = new Builder(resources.dom, resources.generate, resources.hydrate, request);
                 var build = builder.build.bind(builder);
                 return build;
             })
