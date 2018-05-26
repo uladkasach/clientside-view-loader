@@ -60,12 +60,12 @@ var build = async function(options, render_location){
 The `generate` function is used to build views dynamically. The `hydrate` function is used to append functionality to the rendered `dom` (e.g., `login_dom.show('signup')` or `cart_dom.update_item_count()`). `generate` and `hydrate` are explicitly separated to support server side rendering.
 
 #### Server Side Rendering
-Server side rendering is as simple as setting up a `proxy` server and in your code telling the `build` function that `render_location="server"`. Example:
+Server side rendering is as simple as setting up a `proxy` server. By default the clientside-view-loader assumes that all modules should be rendered on the server if possible. To specifically exclude a view from being rendered on the server, set the `render_location` flag to "client". Example:
 ```js
-view.load(path_to_components).build(options, "server");
+view.load(path_to_components).build(options, "client");
 ```
 
-Details on setting up the proxy server and server side rendering with clientside-view-loader can be found in [this thorough tutorial]().
+Details on setting up the proxy server and server side rendering with clientside-view-loader can be found [here](https://github.com/uladkasach/clientside-view-serverside-renderer).
 
 #### More Documentation
 The most precise documentation will always be found in the `/test` directory. It has been written to facilitate readability. Please navigate it for more examples with verbal descriptions of what the module can do.
