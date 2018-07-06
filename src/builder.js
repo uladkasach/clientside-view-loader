@@ -27,15 +27,20 @@ Builder.prototype = {
         return promise_dom;
     },
     _build : async function(options, render_location, dom){
-        // define reused constants
-        var encoded_options = window.btoa(JSON.stringify(options));
-
         // define readability constants
         var generate_is_defined = this.generate !== false;
         var hydrate_is_defined = this.hydrate !== false;
         var render_on_server = !(render_location == "client"); // if not on client, assume render on server
         var hydrate_provided_dom = render_location === "hydrate"; // defined if we should be hydrating a child node
         var currently_rendering_on_server = window.root_window.currently_rendering_on_server === true; // if rendering on server, the root_window will have the property `currently_rendering_on_server` s.t. `currently_rendering_on_server==true`
+
+        // define reused constants
+        try{
+            if(render_on_server) var encoded_options = window.btoa(JSON.stringify(options));
+        }catch(error){
+            console.error(error);
+            console.warn("Due to the above error, the element can not be rendered on the server by clientside require.");
+        }
 
         // if currently_rendering_on_server and render_on_server not requested, throw error to reject the promise this async function returns;
         //      i.e., notify that this dom will not be resolving
