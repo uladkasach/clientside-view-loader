@@ -44,7 +44,7 @@ var resource_loader = {
         if(request.indexOf("/") == -1){ // if no "/" present, this is a node module. load the dom and compiler as defined in the package.json
             // define module basic info
             var module_name = request;
-            var module_root_path = window.clientside_require.modules_root + "/" + module_name;
+            var module_root_path = env.clientside_require.modules_root + "/" + module_name;
 
             // retreive package_json contents
             var package_json_path = module_root_path +  "/package.json"; // derive where to expect the package.json file
@@ -85,7 +85,7 @@ var resource_loader = {
     },
 
     convert_html_into_dom : function(html){
-        var holder = window.document.createElement("div");
+        var holder = env.document.createElement("div");
         holder.innerHTML = html;
         var dom = holder.childNodes[0];
         return dom;

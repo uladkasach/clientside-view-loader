@@ -46,8 +46,8 @@ var view_loader = {
              if `currently_rendering_on_server` is defined,
                 ask `content_rendered_manager` to `wait_for` this promise
         */
-        var currently_rendering_on_server = window.root_window.currently_rendering_on_server === true; // if rendering on server, the root_window will have the property `currently_rendering_on_server` s.t. `currently_rendering_on_server==true`
-        if(currently_rendering_on_server) window.root_window.content_rendered_manager.wait_for(promise_build_function.catch(()=>{})); // note, .catch() at the end since build errors just mean that the build function has finished in this context
+        var currently_rendering_on_server = env.root_window.currently_rendering_on_server === true; // if rendering on server, the root_window will have the property `currently_rendering_on_server` s.t. `currently_rendering_on_server==true`
+        if(currently_rendering_on_server) env.root_window.content_rendered_manager.wait_for(promise_build_function.catch(()=>{})); // note, .catch() at the end since build errors just mean that the build function has finished in this context
 
 
         /*

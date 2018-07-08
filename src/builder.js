@@ -20,8 +20,8 @@ Builder.prototype = {
         var promise_dom = this._build(options, render_location, dom_to_hydrate);
 
         // if `currently_rendering_on_server` is defined, ask `content_rendered_manager` to `wait_for` this promise
-        var currently_rendering_on_server = window.root_window.currently_rendering_on_server === true; // if rendering on server, the root_window will have the property `currently_rendering_on_server` s.t. `currently_rendering_on_server==true`
-        if(currently_rendering_on_server) window.root_window.content_rendered_manager.wait_for(promise_dom.catch(()=>{})); // note, .catch() at the end since build errors just mean that the build function has finished in this context
+        var currently_rendering_on_server = env.root_window.currently_rendering_on_server === true; // if rendering on server, the root_window will have the property `currently_rendering_on_server` s.t. `currently_rendering_on_server==true`
+        if(currently_rendering_on_server) env.root_window.content_rendered_manager.wait_for(promise_dom.catch(()=>{})); // note, .catch() at the end since build errors just mean that the build function has finished in this context
 
         // return the function
         return promise_dom;
@@ -32,11 +32,11 @@ Builder.prototype = {
         var hydrate_is_defined = this.hydrate !== false;
         var render_on_server = !(render_location == "client"); // if not on client, assume render on server
         var hydrate_provided_dom = render_location === "hydrate"; // defined if we should be hydrating a child node
-        var currently_rendering_on_server = window.root_window.currently_rendering_on_server === true; // if rendering on server, the root_window will have the property `currently_rendering_on_server` s.t. `currently_rendering_on_server==true`
+        var currently_rendering_on_server = env.root_window.currently_rendering_on_server === true; // if rendering on server, the root_window will have the property `currently_rendering_on_server` s.t. `currently_rendering_on_server==true`
 
         // define reused constants
         try{
-            if(render_on_server) var encoded_options = window.btoa(JSON.stringify(options));
+            if(render_on_server) var encoded_options = env.btoa(JSON.stringify(options));
         }catch(error){
             console.error(error);
             console.warn("Due to the above error, the element can not be rendered on the server by clientside require.");
@@ -50,7 +50,7 @@ Builder.prototype = {
         if(render_on_server){
             this.build_id_enumerator += 1; // enumerate build ids
             var query_string = '[ssr-enumerator="'+this.build_id_enumerator+'"][ssr-view_identifier="'+this.view_identifier+'"][ssr-build_options="'+encoded_options+'"]';
-            if(!hydrate_provided_dom) var dom = window.root_window.document.querySelector(query_string); // try to find dom element; if hydrate_provided_dom, no need to look
+            if(!hydrate_provided_dom) var dom = env.root_window.document.querySelector(query_string); // try to find dom element; if hydrate_provided_dom, no need to look
         }
         var dom_found_rendered = (typeof dom != "undefined" && dom != null); // dom was found rendered if object is not undefined and not null
 
@@ -90,7 +90,7 @@ Builder.prototype = {
         if(build_enumerator == null) return; // if build_enumerator is now null, then one of the child views was the parent of this child as well and hydrated it
         var view_identifier = child.getAttribute('ssr-view_identifier');
         var build_options_encoded = child.getAttribute('ssr-build_options');
-        var build_options_string = window.atob(build_options_encoded);
+        var build_options_string = env.atob(build_options_encoded);
         var build_options = JSON.parse(build_options_string);
         var view_loader = await promise_view_loader;
         await view_loader.load(view_identifier).build(build_options, "hydrate", child); // run build to hydrate the element

@@ -1,12 +1,12 @@
 {
   "name": "clientside-view-loader",
-  "version": "2.7.4",
+  "version": "2.7.5",
   "description": "a clientside module which simplifies loading views (html, css, and javascript) and additionally supports server side rendering",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "clientside-require": "^4.4.1"
+    "clientside-require": "^4.7.2"
   },
   "repository": {
     "type": "git",
